@@ -1,19 +1,15 @@
-//
-// Created by a on 30/07/2024.
-//
-
 #include "smtp.h"
 #include <stdio.h>
 #include <string.h>
 #include <curl/curl.h>
 
-#define FROM    "your_email@example.com"
+#define FROM    "guy@om.er"
 #define TO      "user-11fb328c-a341-4d3c-af1d-6792ea5d4fdf@mailslurp.net"
-#define CC      "<cc_email@example.com>"
+#define CC      "also_guy@om.er"
 
 static const char *payload_text[] = {
         "To: " TO "\r\n",
-//        "Cc: " CC "\r\n",
+        "Cc: " CC "\r\n",
         "From: " FROM " (Your Name)\r\n",
         "Subject: SMTP email example\r\n",
         "\r\n", /* empty line to divide headers from body, see RFC5322 */
@@ -60,8 +56,6 @@ int main(void) {
 
 //        curl_easy_setopt(curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL);
         curl_easy_setopt(curl, CURLOPT_USE_SSL, (long)CURLUSESSL_NONE);
-
-//        curl_easy_setopt(curl, CURLOPT_MAIL_AUTH, "HELO");
 
         curl_easy_setopt(curl, CURLOPT_MAIL_FROM, FROM);
 

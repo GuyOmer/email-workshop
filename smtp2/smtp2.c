@@ -38,7 +38,7 @@
 /* The libcurl options want plain addresses, the viewable headers in the mail
  * can get a full name as well.
  */
-#define FROM_ADDR    "<sender@example.org>"
+#define FROM_ADDR    "guy@om.er"
 #define TO_ADDR      "user-11fb328c-a341-4d3c-af1d-6792ea5d4fdf@mailslurp.net"
 #define CC_ADDR      "<info@example.org>"
 
