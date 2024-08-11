@@ -1,111 +1,76 @@
 #include <stdio.h>
 #include <string.h>
 #include <curl/curl.h>
-#include "image.h"
 #include "../common/secrets.h"
 
 #define FROM    COMMON__FROM_ADDRESS
 #define TO      MAILSLURP_ADDRESS
-#define CC      MAILOSAUR_ADDRESS
-
-
-// Base64 encoded image content (just a short placeholder example)
-static const char *image_base64 = IMAGE_TO_SEND;
-
-// Define the MIME payload text
-static const char *payload_text[] = {
-        "From: " FROM " (Guy)\r\n",
-        "To: " TO "\r\n",
-        "Subject: SMTP + MIME Example\r\n",
-        "MIME-Version: 1.0\r\n",
-        "Content-Type: multipart/related; boundary=\"boundary_string\"\r\n",
-        "\r\n",
-        "--boundary_string\r\n",
-        "Content-Type: text/html; charset=UTF-8\r\n",
-        "\r\n",
-        "<html>\r\n",
-        "<body>\r\n",
-        "<h1>Hello, World!</h1>\r\n",
-        "<p>This email contains an inline image.</p>\r\n",
-        "<img src=\"cid:image1@example.com\" alt=\"Inline Image\">\r\n",
-        "</body>\r\n",
-        "</html>\r\n",
-        "\r\n",
-        "--boundary_string\r\n",
-        "Content-Type: image/png\r\n",
-        "Content-Transfer-Encoding: base64\r\n",
-        "Content-ID: <image1@example.com>\r\n",
-        "\r\n",
-        "", // Placeholder for image data
-        "--boundary_string--\r\n",
-        NULL
-};
-
-// Struct to keep track of the upload status
-struct upload_status {
-    int lines_read;
-};
-
-// Callback function to read the payload data
-static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp) {
-    struct upload_status *upload_ctx = (struct upload_status *) userp;
-    const char *data;
-
-    // If we've exhausted all lines, return 0
-    if ((size == 0) || (nmemb == 0) || ((size * nmemb) < 1)) {
-        return 0;
-    }
-
-    // Get the next line to send
-    data = payload_text[upload_ctx->lines_read];
-
-    // Handle sending image data as a special case
-    if (data == NULL && upload_ctx->lines_read == 18) { // 18 is the index where the image starts
-        data = image_base64; // Use the base64 image data
-    }
-
-    if (data) {
-        size_t len = strlen(data);
-        memcpy(ptr, data, len);
-        upload_ctx->lines_read++;
-        return len;
-    }
-
-    return 0;
-}
 
 int main(void) {
     CURL *curl;
     CURLcode res = CURLE_OK;
-    struct curl_slist *recipients = NULL;
-    struct upload_status upload_ctx = {0};
 
-    // Initialize CURL
+    // SMTP server credentials
+    const char *smtp_url = MAILSLURP_SMTP_HOST; // Use your SMTP server and port
+    const char *username = MAILSLURP_SMTP_USERNAME;      // Use your email address
+    const char *password = MAILSLURP_SMTP_PASSWORD;         // Use your email password
+
+    // Email details
+    const char *sender = "From: Your Name " FROM;
+    const char *recipient = "To: Recipient Name " TO;
+    const char *subject = "Subject: Test Email with Image Attachment";
+    const char *body_text = "This is a test email with a JPEG image attached.";
+    const char *file_path = "/mnt/c/Users/omer1/CLionProjects/email/mime/image.jpg";
+
+    // Initialize libcurl
     curl = curl_easy_init();
     if (curl) {
-        // Set SMTP server URL
-        curl_easy_setopt(curl, CURLOPT_URL, "smtp://mxslurp.click:2525");
+        // Set SMTP URL
+        curl_easy_setopt(curl, CURLOPT_URL, smtp_url);
 
-        // Set authentication details
-        curl_easy_setopt(curl, CURLOPT_USERNAME, "nWda0ngQWTJzzqxURmyDDwEX8o4StIcD");
-        curl_easy_setopt(curl, CURLOPT_PASSWORD, "Mg6s1nmZ7S4UUJGtRsuNYaFMOouTs7wT");
-
-        // Enable verbose output for debugging
+        // Enable verbose output
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
-        // Set MAIL FROM address
+        // Set username and password for authentication
+        curl_easy_setopt(curl, CURLOPT_USERNAME, username);
+        curl_easy_setopt(curl, CURLOPT_PASSWORD, password);
+
+        // Set the sender email
         curl_easy_setopt(curl, CURLOPT_MAIL_FROM, FROM);
 
+        // Set the recipient email
+        struct curl_slist *recipients = NULL;
         recipients = curl_slist_append(recipients, TO);
-        recipients = curl_slist_append(recipients, CC);
         curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);
 
-        // Set the read callback function
-        curl_easy_setopt(curl, CURLOPT_READFUNCTION, payload_source);
-        curl_easy_setopt(curl, CURLOPT_READDATA, &upload_ctx);
-        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+        // Create a multipart MIME structure
+        curl_mime *mime;
+        curl_mimepart *part;
 
-        // Perform the email send operation
+        mime = curl_mime_init(curl);
+
+        // Add the text part
+        part = curl_mime_addpart(mime);
+        curl_mime_data(part, body_text, CURL_ZERO_TERMINATED);
+
+        // Add the image part (inline)
+        part = curl_mime_addpart(mime);
+        curl_mime_type(part, "image/jpeg");
+        curl_mime_filedata(part, file_path);
+        curl_mime_encoder(part, "base64");
+        curl_mime_headers(part, curl_slist_append(NULL, "Content-Disposition: inline; filename=\"image.jpg\""), 0);
+        curl_mime_headers(part, curl_slist_append(NULL, "Content-ID: <image1>"), 0);
+
+        // Add the text part with reference to the inline image
+        part = curl_mime_addpart(mime);
+        curl_mime_data(part, "This is a test email with an inline JPEG image.<br><img src=\"cid:image1\"/>",
+                       CURL_ZERO_TERMINATED);
+        curl_mime_type(part, "text/html");
+
+        // Attach the MIME structure to the email
+        curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime);
+
+        // Perform the sending operation
         res = curl_easy_perform(curl);
 
         // Check for errors
@@ -113,10 +78,9 @@ int main(void) {
             fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
         }
 
-        // Free recipient list
+        // Cleanup
+        curl_mime_free(mime);
         curl_slist_free_all(recipients);
-
-        // Cleanup CURL
         curl_easy_cleanup(curl);
     }
 

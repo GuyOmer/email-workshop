@@ -1,11 +1,7 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
-
-#define IMAP_URL "imap://mailslurp.click:1143"  // Change to your IMAP server URL
-#define USERNAME "iwlKIwaoQbgl4JnPLNAZMNVEqeFihrRt"      // Change to your email address
-#define PASSWORD "GpprjxVfWDTdJdrAXKfRHoFqHtK9Ya1K"                // Change to your email password
+#include "../common/secrets.h"
 
 // Function to write the received data to stdout
 static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *stream) {
@@ -24,15 +20,15 @@ int main(void) {
     if (curl) {
         // Set username and password
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-        curl_easy_setopt(curl, CURLOPT_USERNAME, USERNAME);
-        curl_easy_setopt(curl, CURLOPT_PASSWORD, PASSWORD);
+        curl_easy_setopt(curl, CURLOPT_USERNAME, MAILSLURP_IMAP_USERNAME);
+        curl_easy_setopt(curl, CURLOPT_PASSWORD, MAILSLURP_IMAP_PASSWORD);
 
         // Common options for all operations
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
 
         // List message headers
         printf("Listing message headers:\n");
-        curl_easy_setopt(curl, CURLOPT_URL, IMAP_URL "/INBOX");
+        curl_easy_setopt(curl, CURLOPT_URL, MAILSLURP_IMAP_HOST "/INBOX");
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "FETCH 1:* (FLAGS BODY.PEEK[HEADER.FIELDS (FROM TO SUBJECT DATE)])");
         res = curl_easy_perform(curl);
         if (res != CURLE_OK) {

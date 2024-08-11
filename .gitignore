@@ -1,5 +1,4 @@
 cmake-build-*/**
 .idea/
-pop3_server/venv
 
 common/secrets.h

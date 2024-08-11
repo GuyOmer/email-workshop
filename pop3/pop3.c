@@ -2,12 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
+#include "../common/secrets.h"
 
-#define POP3_URL "pop3://192.168.0.131:1100"
-#define USERNAME "user"
-#define PASSWORD "pass"
-
-// Function to write the received data to stdout
+// Callback function to write the received data to stdout
 static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *stream) {
     (void)stream;
     size_t written = fwrite(ptr, size, nmemb, stdout);
@@ -17,46 +14,37 @@ static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *stream)
 int main(void) {
     CURL *curl;
     CURLcode res = CURLE_OK;
-    struct curl_slist *recipients = NULL;
 
     // Initialize libcurl
     curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
-    if (curl) {
+    if(curl) {
+//        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-        // Set username and password
-        curl_easy_setopt(curl, CURLOPT_USERNAME, USERNAME);
-        curl_easy_setopt(curl, CURLOPT_PASSWORD, PASSWORD);
+        // Set username and password for authentication
+        curl_easy_setopt(curl, CURLOPT_USERNAME, MAILOSAUR_USERNAME);
+        curl_easy_setopt(curl, CURLOPT_PASSWORD, MAILOSAUR_PASSWORD);
 
-        // List messages
-        printf("Listing messages:\n");
-        curl_easy_setopt(curl, CURLOPT_URL, POP3_URL);
+        // Set the POP3 server URL
+        curl_easy_setopt(curl, CURLOPT_URL, MAILOSAUR_POP3_HOST);
+
+        // Set the callback function to write the data to stdout
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+
+        // List all messages
+        printf("Listing messages:\n");
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "LIST");
         res = curl_easy_perform(curl);
-        if (res != CURLE_OK) {
+        if(res != CURLE_OK) {
             fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
             return 1;
         }
 
-        // Retrieve message 1
+        // Retrieve the first message
         printf("\nRetrieving message 1:\n");
-        curl_easy_setopt(curl, CURLOPT_URL, POP3_URL "/1");
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "RETR 1");
         res = curl_easy_perform(curl);
-        if (res != CURLE_OK) {
-            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-            return 1;
-        }
-
-        // Delete message 1
-        printf("\nDeleting message 1:\n");
-        curl_easy_setopt(curl, CURLOPT_URL, POP3_URL "/1");
-        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELE 1");
-        res = curl_easy_perform(curl);
-        if (res != CURLE_OK) {
+        if(res != CURLE_OK) {
             fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
             return 1;
         }
