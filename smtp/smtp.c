@@ -1,18 +1,18 @@
-#include "smtp.h"
+#include "../common/secrets.h"
 #include <stdio.h>
 #include <string.h>
 #include <curl/curl.h>
 
-#define FROM    "guy@om.er"
-#define TO      "user-11fb328c-a341-4d3c-af1d-6792ea5d4fdf@mailslurp.net"
-#define CC      "also_guy@om.er"
+#define FROM    COMMON__FROM_ADDRESS
+#define TO      MAILSLURP_ADDRESS
+#define CC      MAILOSAUR_ADDRESS
 
 static const char *payload_text[] = {
         "To: " TO "\r\n",
+        "From: " FROM " (Guy)\r\n",
         "Cc: " CC "\r\n",
-        "From: " FROM " (Your Name)\r\n",
         "Subject: SMTP email example\r\n",
-        "\r\n", /* empty line to divide headers from body, see RFC5322 */
+        "\r\n", /* divide headers from body */
         "This is a test email sent using libcurl.\r\n",
         "It shows how to send an email using the SMTP protocol.\r\n",
         NULL
@@ -23,7 +23,7 @@ struct upload_status {
 };
 
 static size_t payload_source(void *ptr, size_t size, size_t nmemb, void *userp) {
-    struct upload_status *upload_ctx = (struct upload_status *)userp;
+    struct upload_status *upload_ctx = (struct upload_status *) userp;
     const char *data;
 
     if ((size == 0) || (nmemb == 0) || ((size * nmemb) < 1)) {
@@ -46,16 +46,16 @@ int main(void) {
     CURL *curl;
     CURLcode res = CURLE_OK;
     struct curl_slist *recipients = NULL;
-    struct upload_status upload_ctx = { 0 };
+    struct upload_status upload_ctx = {0};
 
     curl = curl_easy_init();
     if (curl) {
-        curl_easy_setopt(curl, CURLOPT_USERNAME, "nWda0ngQWTJzzqxURmyDDwEX8o4StIcD");
-        curl_easy_setopt(curl, CURLOPT_PASSWORD, "Mg6s1nmZ7S4UUJGtRsuNYaFMOouTs7wT");
-        curl_easy_setopt(curl, CURLOPT_URL, "smtp://mxslurp.click:2525");
+        curl_easy_setopt(curl, CURLOPT_USERNAME, "guy");
+        curl_easy_setopt(curl, CURLOPT_USERNAME, MAILSLURP_USERNAME);
+        curl_easy_setopt(curl, CURLOPT_PASSWORD, MAILSLURP_PASSWORD);
+        curl_easy_setopt(curl, CURLOPT_URL, MAILSLURP_SMTP_HOST);
 
-//        curl_easy_setopt(curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL);
-        curl_easy_setopt(curl, CURLOPT_USE_SSL, (long)CURLUSESSL_NONE);
+        curl_easy_setopt(curl, CURLOPT_USE_SSL, (long) CURLUSESSL_NONE);
 
         curl_easy_setopt(curl, CURLOPT_MAIL_FROM, FROM);
 
@@ -79,5 +79,5 @@ int main(void) {
         curl_easy_cleanup(curl);
     }
 
-    return (int)res;
+    return (int) res;
 }

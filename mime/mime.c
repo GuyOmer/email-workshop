@@ -2,17 +2,19 @@
 #include <string.h>
 #include <curl/curl.h>
 #include "image.h"
+#include "../common/secrets.h"
 
-// Define email addresses and SMTP server details
-#define FROM    "guy@om.er"
-#define TO      "user-11fb328c-a341-4d3c-af1d-6792ea5d4fdf@mailslurp.net"
+#define FROM    COMMON__FROM_ADDRESS
+#define TO      MAILSLURP_ADDRESS
+#define CC      MAILOSAUR_ADDRESS
+
 
 // Base64 encoded image content (just a short placeholder example)
 static const char *image_base64 = IMAGE_TO_SEND;
 
 // Define the MIME payload text
 static const char *payload_text[] = {
-        "From: " FROM "\r\n",
+        "From: " FROM " (Guy)\r\n",
         "To: " TO "\r\n",
         "Subject: SMTP + MIME Example\r\n",
         "MIME-Version: 1.0\r\n",
@@ -94,8 +96,8 @@ int main(void) {
         // Set MAIL FROM address
         curl_easy_setopt(curl, CURLOPT_MAIL_FROM, FROM);
 
-        // Add recipients
         recipients = curl_slist_append(recipients, TO);
+        recipients = curl_slist_append(recipients, CC);
         curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);
 
         // Set the read callback function

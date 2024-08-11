@@ -1,0 +1,5 @@
+From: welcome@example.com
+To: user@example.com
+Subject: This is a message!
+
+Hey, this is bob.
