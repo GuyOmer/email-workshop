@@ -1,32 +1,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <curl/curl.h>
+#include "../common/secrets.h"
 
-// Define email addresses and SMTP server details
-#define FROM    "guy@om.er"
-#define TO      "user-11fb328c-a341-4d3c-af1d-6792ea5d4fdf@mailslurp.net"
-
-
-// Callback function to read the file data
-size_t read_file_callback(void *ptr, size_t size, size_t nmemb, void *userp) {
-    FILE *readhere = (FILE *) userp;
-    curl_off_t nread;
-
-    size_t retcode = fread(ptr, size, nmemb, readhere);
-    nread = (curl_off_t) retcode;
-
-    fprintf(stderr, "*** We read %" CURL_FORMAT_CURL_OFF_T " bytes from file\n", nread);
-    return retcode;
-}
+#define FROM    COMMON__FROM_ADDRESS
+#define TO      MAILSLURP_ADDRESS
 
 int main(void) {
     CURL *curl;
     CURLcode res = CURLE_OK;
 
     // SMTP server credentials
-    const char *smtp_url = "smtp://mxslurp.click:2525"; // Use your SMTP server and port
-    const char *username = "nWda0ngQWTJzzqxURmyDDwEX8o4StIcD";      // Use your email address
-    const char *password = "Mg6s1nmZ7S4UUJGtRsuNYaFMOouTs7wT";         // Use your email password
+    const char *smtp_url = MAILSLURP_SMTP_HOST; // Use your SMTP server and port
+    const char *username = MAILSLURP_USERNAME;      // Use your email address
+    const char *password = MAILSLURP_PASSWORD;         // Use your email password
 
     // Email details
     const char *sender = "From: Your Name " FROM;
