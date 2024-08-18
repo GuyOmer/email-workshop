@@ -18,12 +18,10 @@ int main(void) {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
     if (curl) {
-        // Set username and password
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
         curl_easy_setopt(curl, CURLOPT_USERNAME, MAILSLURP_IMAP_USERNAME);
         curl_easy_setopt(curl, CURLOPT_PASSWORD, MAILSLURP_IMAP_PASSWORD);
 
-        // Common options for all operations
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
 
         // List message headers

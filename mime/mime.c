@@ -4,7 +4,7 @@
 #include "../common/secrets.h"
 
 #define FROM    COMMON__FROM_ADDRESS
-#define TO      MAILSLURP_ADDRESS
+#define TO      MAILOSAUR_ADDRESS
 
 int main(void) {
     CURL *curl;
@@ -22,23 +22,16 @@ int main(void) {
     const char *body_text = "This is a test email with a JPEG image attached.";
     const char *file_path = "/mnt/c/Users/omer1/CLionProjects/email/mime/image.jpg";
 
-    // Initialize libcurl
     curl = curl_easy_init();
     if (curl) {
-        // Set SMTP URL
         curl_easy_setopt(curl, CURLOPT_URL, smtp_url);
-
-        // Enable verbose output
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
-        // Set username and password for authentication
         curl_easy_setopt(curl, CURLOPT_USERNAME, username);
         curl_easy_setopt(curl, CURLOPT_PASSWORD, password);
 
-        // Set the sender email
         curl_easy_setopt(curl, CURLOPT_MAIL_FROM, FROM);
 
-        // Set the recipient email
         struct curl_slist *recipients = NULL;
         recipients = curl_slist_append(recipients, TO);
         curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);

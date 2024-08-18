@@ -50,10 +50,9 @@ int main(void) {
 
     curl = curl_easy_init();
     if (curl) {
-        curl_easy_setopt(curl, CURLOPT_USERNAME, "guy");
-        curl_easy_setopt(curl, CURLOPT_USERNAME, MAILSLURP_SMTP_USERNAME);
-        curl_easy_setopt(curl, CURLOPT_PASSWORD, MAILSLURP_SMTP_PASSWORD);
-        curl_easy_setopt(curl, CURLOPT_URL, MAILSLURP_SMTP_HOST);
+        curl_easy_setopt(curl, CURLOPT_USERNAME, MAILOSAUR_USERNAME);
+        curl_easy_setopt(curl, CURLOPT_PASSWORD, MAILOSAUR_PASSWORD);
+        curl_easy_setopt(curl, CURLOPT_URL, MAILOSAUR_SMTP_HOST);
 
         curl_easy_setopt(curl, CURLOPT_USE_SSL, (long) CURLUSESSL_NONE);
 

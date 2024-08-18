@@ -19,13 +19,8 @@ int main(void) {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
     if(curl) {
-//        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-
-        // Set username and password for authentication
         curl_easy_setopt(curl, CURLOPT_USERNAME, MAILOSAUR_USERNAME);
         curl_easy_setopt(curl, CURLOPT_PASSWORD, MAILOSAUR_PASSWORD);
-
-        // Set the POP3 server URL
         curl_easy_setopt(curl, CURLOPT_URL, MAILOSAUR_POP3_HOST);
 
         // Set the callback function to write the data to stdout
