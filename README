@@ -1,0 +1,12 @@
+# EMAIL Protocols
+
+# Requirements
+ - cmake 3.x
+ - gcc/clang
+ - libcurl (`apt install libcurl libcurl4-openssl-dev`)
+
+ # Secrets
+ Secrets are required for running this project.
+ copy `common/secrets.h.template` to `common/secrets.h`.
+ Create an account for *both* MailSlurp and Mailosaur.
+ Update the secrets file with credentials.

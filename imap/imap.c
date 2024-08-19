@@ -34,7 +34,7 @@ int main(void) {
             return 1;
         }
 
-        // Retrieve a specific message (e.g., message 1)
+        // Retrieve a specific message
         printf("\nRetrieving message 1:\n");
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "FETCH 1 BODY[TEXT]");
         res = curl_easy_perform(curl);
